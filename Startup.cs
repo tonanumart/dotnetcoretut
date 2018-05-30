@@ -1,13 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Threading.Tasks;
 using DatingApp.API.Data;
 using DatingApp.API.DataRepoImplements;
+using DatingApp.API.Helper;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Diagnostics;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -51,6 +55,19 @@ namespace DatingApp.API
             if (env.IsDevelopment())
             {
                 app.UseDeveloperExceptionPage();
+            }else{
+                app.UseExceptionHandler( async builder => {
+                    builder.Run( async context =>{
+                        context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
+
+                        var errors = context.Features.Get<IExceptionHandlerFeature>();
+                        if(errors != null){
+                             context.Response.AppErrorFound(errors.Error.Message);
+                             await context.Response.WriteAsync(errors.Error.Message);
+                        }
+                    }); 
+                });
+
             }
             app.UseCors(x => x.AllowAnyHeader().AllowAnyMethod().AllowAnyOrigin().AllowCredentials());
             app.UseAuthentication();

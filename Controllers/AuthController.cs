@@ -23,8 +23,8 @@ namespace DatingApp.API.Controllers
         [HttpPost("register")]
         public async Task<IActionResult> Register([FromBody]UserForRegisterDto user)
         {
-
-            user.Username = user.Username.ToLower();
+            if(!string.IsNullOrWhiteSpace(user.Username))
+                user.Username = user.Username.ToLower();
 
             bool isExistUsr = await repo.UserExist(user.Username);
             if(isExistUsr)
@@ -43,6 +43,8 @@ namespace DatingApp.API.Controllers
         [HttpPost("login")]
         public async Task<IActionResult> Login([FromBody]UserLoginDto user)
         {    
+            //throw new System.Exception("Error Test");
+
             var userFromRepo = await repo.Login(user.Username.ToLower(),user.Password);
             if(userFromRepo == null)
                 return Unauthorized();
